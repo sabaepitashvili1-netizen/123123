@@ -55,7 +55,7 @@ function Index() {
             <p className="mt-5 text-lg text-muted-foreground">მაღალხარისხიანი განათლება ხელმისაწვდომ ფასად — AI მენტორის თანხლებით.</p>
             <div className="mt-8 flex flex-wrap gap-3">
               <Button variant="hero" size="lg" className="h-12 px-8">დაიწყე 7-დღიანი საცდელი</Button>
-              <Button variant="outline" size="lg" className="h-12 rounded-full" asChild><a href="#demo">ნახე დემო</a></Button>
+              <a href="#demo" className="inline-flex h-12 items-center rounded-full border bg-background px-8 text-sm font-medium hover:bg-muted">ნახე დემო</a>
             </div>
             <p className="mt-4 text-sm text-muted-foreground">გაუქმება ნებისმიერ დროს · ბარათი საცდელისთვის არ საჭიროა</p>
           </div>
