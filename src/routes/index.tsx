@@ -1,165 +1,594 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { categories, courses, type Category } from "@/content/catalog";
-import mentor from "@/assets/ai-mentor.jpg";
+import {
+  ArrowUpRight,
+  ArrowRight,
+  ArrowLeft,
+  Layers,
+  Sparkles,
+  Play,
+  Pause,
+  Code2,
+  Check,
+  BookOpen,
+  Award,
+  Compass,
+  Menu,
+  Volume2,
+  Terminal,
+  Folder,
+  Plus,
+  X,
+} from "lucide-react";
+import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { CareerAssistant } from "@/components/career-assistant";
+import { categories, courses, courseByTitle, type Category } from "@/content/catalog";
+import { PromoVideo } from "@/components/promo-video";
+import "@/home.css";
 
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "SkillFlow AI — პროფესია 9 თვეში, 100 ₾/თვე" },
-      { name: "description", content: "მაღალხარისხიანი განათლება ხელმისაწვდომ ფასად — AI მენტორის თანხლებით. 7-დღიანი უფასო საცდელი." },
-      { property: "og:title", content: "SkillFlow AI — AI მენტორი შენი პროფესიისთვის" },
-      { property: "og:description", content: "9-თვიანი პროგრამა, AI ავატარ ლექტორი, სერტიფიკატი. 100 ₾/თვე." },
-      { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary_large_image" },
+      { title: "SkillFlow AI — შენი მომავალი იწყება აქ" },
+      {
+        name: "description",
+        content:
+          "აღმოაჩინე პროფესია, ისწავლე AI მენტორთან და შექმენი შენი პირველი პროექტი. 2–6 თვე, 100 ₾ თვეში.",
+      },
     ],
   }),
-  component: Index,
+  component: Home,
 });
-
-const months = ["საფუძვლები", "ძირითადი ინსტრუმენტები", "პრაქტიკა", "პროექტები", "შუალედური გამოცდა", "სიღრმისეული თემები", "გუნდური სამუშაო", "პორტფოლიო", "კაპსტოუნი + ფინალური"];
-
-const faqs: [string, string][] = [
-  ["შემიძლია ნებისმიერ დროს გაუქმება?", "დიახ. ხელშეკრულება არ არის — იხდი თვიურად და აუქმებ როცა გინდა. პროგრესი ინახება 12 თვე."],
-  ["როგორ მუშაობს AI ლექტორი?", "ყოველ ლექციას ატარებს AI ავატარი, რომელსაც ნებისმიერ მომენტში შეგიძლია შეეკითხო ტექსტით ან ხმით."],
-  ["მივიღებ სერტიფიკატს?", "დიახ — 9 თვის დასრულების შემდეგ იღებ ვერიფიცირებად სერტიფიკატს საჯარო ბმულით."],
-  ["თანხის დაბრუნება?", "პირველი გადახდიდან 7 დღეში სრული თანხა ბრუნდება, თუ კურსის 10%-ზე ნაკლები გაქვს გავლილი."],
-  ["შემიძლია პაუზა?", "დიახ, თითო კურსზე 2 თვემდე. ამ დროს გადახდა ჩერდება, პროგრესი ინახება."],
+const scenes = [
+  {
+    label: "ისწავლე",
+    subtitle: "შენი AI მენტორი",
+    eyebrow: "ახალი პროფესია. სრულიად ახალი გამოცდილება.",
+    title: (
+      <>
+        შენი მომავალი.
+        <br />
+        <span>შენი ტემპით.</span>
+      </>
+    ),
+    description: "შედი შენს სასწავლო სივრცეში. ისწავლე, შექმენი და აღმოაჩინე, რა შეგიძლია.",
+    icon: BookOpen,
+    detail: "AI მენტორი · ახსნა შენი ტემპით",
+  },
+  {
+    label: "შექმენი",
+    subtitle: "ცოდნა მოქმედებაში",
+    eyebrow: "ნაკლები თეორია. მეტი „მე შევძელი“.",
+    title: (
+      <>
+        იდეა შენია.
+        <br />
+        <span>შექმენიც შენ.</span>
+      </>
+    ),
+    description: "პირველი ხაზიდან პირველ პროექტამდე. აქ ცოდნა ხელშესახებ გამოცდილებად იქცევა.",
+    icon: Code2,
+    detail: "პრაქტიკა · პროექტები · უკუკავშირი",
+  },
+  {
+    label: "გაიზარდე",
+    subtitle: "შენი შემდეგი ნაბიჯი",
+    eyebrow: "შენი უნარები. შენი ახალი შესაძლებლობები.",
+    title: (
+      <>
+        აჩვენე სამყაროს,
+        <br />
+        <span>რა შეგიძლია.</span>
+      </>
+    ),
+    description: "შეკრიბე შენი ნამუშევრები. შექმენი პორტფოლიო და გადადგი შემდეგი ნაბიჯი.",
+    icon: Award,
+    detail: "პორტფოლიო · ფინალური პროექტი",
+  },
 ];
-
-function Index() {
-  const [cat, setCat] = useState<Category | "all">("all");
-  const list = courses.filter((c) => cat === "all" || c.category === cat);
-
+function Home() {
+  const [scene, setScene] = useState(0),
+    [catalog, setCatalog] = useState(false),
+    [cat, setCat] = useState<Category | "all">("all"),
+    [chosen, setChosen] = useState<string | null>(null),
+    [menu, setMenu] = useState(false),
+    [count, setCount] = useState(0);
+  const current = scenes[scene]!;
+  const chosenCourse = courseByTitle(chosen);
+  function showGuide(course?: string) {
+    setCatalog(false);
+    setMenu(false);
+    window.setTimeout(
+      () => window.dispatchEvent(new CustomEvent("skillflow:guide", { detail: { course } })),
+      80,
+    );
+  }
+  function changeScene(next: number) {
+    setScene(next);
+  }
   return (
-    <div className="min-h-screen">
-      <header className="sticky top-0 z-30 border-b bg-background/80 backdrop-blur">
-        <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
-          <span className="text-xl font-extrabold"><span className="text-brand">SkillFlow</span> AI</span>
-          <nav className="hidden gap-6 text-sm text-muted-foreground md:flex">
-            <a href="#how">როგორ მუშაობს</a><a href="#catalog">კურსები</a><a href="#pricing">ფასი</a><a href="#faq">FAQ</a>
-          </nav>
-          <Button variant="hero" size="sm">დაიწყე უფასოდ</Button>
+    <div className={`sf-cinema scene-${scene}`}>
+      <a href="#cinema-main" className="skip-link">
+        მთავარ შინაარსზე გადასვლა
+      </a>
+      <div className="cinema-atmosphere" aria-hidden="true">
+        <div />
+        <div />
+        <span>YOUR NEXT CHAPTER</span>
+      </div>
+      <header className="cinema-header">
+        <a href="/" className="cinema-brand" aria-label="SkillFlow AI მთავარი">
+          <span>
+            <Layers size={22} />
+          </span>
+          SkillFlow<small>AI</small>
+        </a>
+        <nav className="cinema-nav" aria-label="მთავარი ნავიგაცია">
+          <button
+            onClick={() => {
+              setCatalog(true);
+              setChosen(null);
+            }}
+          >
+            კურსები
+          </button>
+          <a href="/explore#how">სასწავლო გზა</a>
+          <a href="/explore#pricing">ფასი</a>
+        </nav>
+        <div className="cinema-header-end">
+          <span className="cinema-fee">
+            100 ₾<small>/ თვე</small>
+          </span>
+          <button className="cinema-guide" onClick={() => showGuide()}>
+            <Sparkles size={15} />
+            <span>იპოვე შენი გზა</span>
+            <ArrowUpRight size={14} />
+          </button>
+          <button className="cinema-menu" aria-label="მენიუს გახსნა" onClick={() => setMenu(true)}>
+            <Menu size={22} />
+          </button>
         </div>
       </header>
-
-      <section className="bg-soft">
-        <div className="mx-auto grid max-w-6xl items-center gap-10 px-4 py-16 md:grid-cols-2 md:py-24">
-          <div>
-            <span className="rounded-full bg-secondary px-3 py-1 text-xs font-semibold text-secondary-foreground">AI მენტორი 24/7</span>
-            <h1 className="mt-5 text-4xl font-extrabold leading-tight md:text-5xl">
-              ისწავლე პროფესია <span className="text-brand">9 თვეში</span> — 100 ₾ თვეში
-            </h1>
-            <p className="mt-5 text-lg text-muted-foreground">მაღალხარისხიანი განათლება ხელმისაწვდომ ფასად — AI მენტორის თანხლებით.</p>
-            <div className="mt-8 flex flex-wrap gap-3">
-              <Button variant="hero" size="lg" className="h-12 px-8">დაიწყე 7-დღიანი საცდელი</Button>
-              <a href="#demo" className="inline-flex h-12 items-center rounded-full border bg-background px-8 text-sm font-medium hover:bg-muted">ნახე დემო</a>
-            </div>
-            <p className="mt-4 text-sm text-muted-foreground">გაუქმება ნებისმიერ დროს · ბარათი საცდელისთვის არ საჭიროა</p>
+      <main id="cinema-main" className="cinema-main">
+        <div className="cinema-copy" key={`copy-${scene}`}>
+          <span className="cinema-eyebrow">
+            <i />
+            {current.eyebrow}
+          </span>
+          <h1>{current.title}</h1>
+          <p>{current.description}</p>
+          <div className="cinema-actions">
+            <button
+              className="cinema-primary"
+              onClick={() => {
+                setCatalog(true);
+                setChosen(null);
+              }}
+            >
+              აღმოაჩინე კურსები
+              <ArrowUpRight size={18} />
+            </button>
+            <button className="cinema-secondary" onClick={() => showGuide()}>
+              <Compass size={17} />
+              <span>ჯერ არ აგირჩევია?</span>
+            </button>
           </div>
-          <img src={mentor} alt="AI ლექტორი" width={1024} height={1024} className="aspect-square w-full rounded-3xl object-cover shadow-elegant" />
+          <div className="cinema-proof">
+            <span>
+              <Check size={13} />
+              2–6 თვე
+            </span>
+            <i />
+            <span>
+              <Check size={13} />
+              შენი განრიგით
+            </span>
+          </div>
         </div>
-      </section>
-
-      <section className="mx-auto max-w-6xl px-4 py-20">
-        <div className="grid gap-6 md:grid-cols-2">
-          <div className="rounded-3xl border bg-muted p-8">
-            <h3 className="text-sm font-semibold text-muted-foreground">ბუთქემფები</h3>
-            <p className="mt-2 text-3xl font-bold">3 000 – 8 000 ₾</p>
-            <ul className="mt-4 space-y-2 text-muted-foreground"><li>· ფიქსირებული განრიგი</li><li>· წინასწარი გადახდა</li><li>· ლექტორი მხოლოდ ლექციაზე</li></ul>
-          </div>
-          <div className="rounded-3xl bg-brand p-8 text-primary-foreground shadow-elegant">
-            <h3 className="text-sm font-semibold opacity-80">SkillFlow AI</h3>
-            <p className="mt-2 text-3xl font-bold">100 ₾ / თვე</p>
-            <ul className="mt-4 space-y-2 opacity-90"><li>· შენი ტემპი და დღეები</li><li>· თვიური გადახდა, გაუქმება ნებისმიერ დროს</li><li>· AI მენტორი, რომელიც ყოველთვის პასუხობს</li></ul>
-          </div>
-        </div>
-      </section>
-
-      <section id="how" className="bg-muted/50 py-20">
-        <div className="mx-auto max-w-6xl px-4">
-          <h2 className="text-3xl font-bold">9-თვიანი გზა</h2>
-          <p className="mt-2 text-muted-foreground">ყოველ თვეს — მოდული, კვირეული ქვიზები, დავალებები და თვის გამოცდა.</p>
-          <div className="mt-10 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-9">
-            {months.map((m, i) => (
-              <div key={m} className="rounded-2xl border bg-card p-4">
-                <div className="flex h-9 w-9 items-center justify-center rounded-full bg-brand font-bold text-primary-foreground">{i + 1}</div>
-                <p className="mt-3 text-sm font-medium">{m}</p>
+        <div className="cinema-visual" aria-label="სწავლის გამოცდილების ინტერაქტიული ნიმუში">
+          <div className="stage-halo" />
+          <div className="stage-ring ring-a" />
+          <div className="stage-ring ring-b" />
+          <div className="cinema-stage" key={`stage-${scene}`}>
+            <div className="stage-float float-top">
+              <span className="float-icon">
+                <current.icon size={18} />
+              </span>
+              <div>
+                <small>შენი შემდეგი ნაბიჯი</small>
+                <strong>
+                  {scene === 0
+                    ? "გაიგე. სცადე. აღმოაჩინე."
+                    : scene === 1
+                      ? "შენი იდეა ცოცხლდება."
+                      : "ყველაფერი შენ შექმენი."}
+                </strong>
               </div>
-            ))}
+              <span className="float-orbit" />
+            </div>
+            <div className="product-device">
+              <div className="device-top">
+                <a href="/explore" className="device-wordmark">
+                  <Layers size={13} />
+                  SkillFlow
+                </a>
+                <span>
+                  <i />
+                  შენი სასწავლო სივრცე
+                </span>
+                <div className="device-dots">
+                  <i />
+                  <i />
+                  <i />
+                </div>
+              </div>
+              <div className="device-body">
+                <aside className="device-sidebar" aria-hidden="true">
+                  <span className={scene === 0 ? "active" : ""}>
+                    <BookOpen size={17} />
+                  </span>
+                  <span className={scene === 1 ? "active" : ""}>
+                    <Code2 size={17} />
+                  </span>
+                  <span className={scene === 2 ? "active" : ""}>
+                    <Folder size={17} />
+                  </span>
+                  <span>
+                    <Award size={17} />
+                  </span>
+                  <span className="sidebar-spark">
+                    <Sparkles size={17} />
+                  </span>
+                </aside>
+                <div className="device-content">
+                  {scene === 0 ? (
+                    <div className="learn-scene">
+                      <div className="device-section-title">
+                        <span>მოდული 01</span>
+                        <span className="concept-tag">ვიზუალური დემო</span>
+                      </div>
+                      <h2>
+                        დიდი იდეები.
+                        <br />
+                        პატარა ნაბიჯებით.
+                      </h2>
+                      <div className="lesson-view promo-poster-view">
+                        <img
+                          src="/media/skillflow-mentor-cover.jpg"
+                          alt="SkillFlow-ის მოკლე ტექნოლოგიური ფილმის კადრი"
+                        />
+                        <span className="lesson-live">
+                          <Sparkles size={11} />
+                          შენი AI მენტორი
+                        </span>
+                        <PromoVideo className="scene-play" />
+                        <span className="lesson-live-caption">
+                          შენი მომავალი იწყება დღეს · 15 წამი
+                        </span>
+                      </div>
+                      <div className="lesson-progress">
+                        <span>პირველი ნაბიჯი</span>
+                        <div>
+                          <i />
+                        </div>
+                        <small>01 / 06</small>
+                      </div>
+                    </div>
+                  ) : scene === 1 ? (
+                    <div className="build-scene">
+                      <div className="device-section-title">
+                        <span>შენი სამუშაო სივრცე</span>
+                        <span className="concept-tag">სცადე ღილაკი +</span>
+                      </div>
+                      <h2>
+                        ნასწავლი.
+                        <br />
+                        ახლა მოქმედებაში.
+                      </h2>
+                      <div className="editor-preview">
+                        <div className="editor-tab">
+                          <Code2 size={12} />
+                          my-first-app.tsx<span>●</span>
+                        </div>
+                        <div className="editor-code">
+                          <span>
+                            <i>01</i>
+                            <em>const</em> [count, setCount]
+                          </span>
+                          <span>
+                            <i>02</i> = useState(<b>0</b>);
+                          </span>
+                          <span>
+                            <i>03</i>
+                          </span>
+                          <span>
+                            <i>04</i>
+                            <em>return</em> (
+                          </span>
+                          <span>
+                            <i>05</i> &lt;<b>YourNextIdea</b> /&gt;
+                          </span>
+                          <span>
+                            <i>06</i>);
+                          </span>
+                        </div>
+                        <div className="interactive-preview">
+                          <span className="mini-grid" />
+                          <small>შენი პირველი ინტერაქცია</small>
+                          <div>
+                            <strong aria-live="polite">{count.toString().padStart(2, "0")}</strong>
+                            <button
+                              onClick={() => setCount((c) => c + 1)}
+                              aria-label="პროექტის მრიცხველის გაზრდა"
+                            >
+                              <Plus size={21} />
+                            </button>
+                          </div>
+                          <span>იდეიდან მოქმედებამდე.</span>
+                        </div>
+                      </div>
+                      <div className="build-status">
+                        <i />
+                        <span>შენ ქმნი. შენ სწავლობ.</span>
+                        <Terminal size={13} />
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="portfolio-scene">
+                      <div className="device-section-title">
+                        <span>შენი პორტფოლიო</span>
+                        <span className="concept-tag">ვიზუალური ნიმუში</span>
+                      </div>
+                      <h2>
+                        ეს ყველაფერი
+                        <br />
+                        შენ შეგიძლია.
+                      </h2>
+                      <div className="portfolio-intro">
+                        <div>
+                          <span>გამარჯობა, მე ვარ</span>
+                          <strong>მომავლის შემქმნელი.</strong>
+                        </div>
+                        <div className="portfolio-avatar">
+                          <Sparkles size={23} />
+                        </div>
+                      </div>
+                      <div className="portfolio-projects">
+                        {[Code2, Layers, Compass].map((I, i) => (
+                          <div key={i} className={`portfolio-project project-${i}`}>
+                            <div>
+                              <I size={30} strokeWidth={1.3} />
+                              <span />
+                            </div>
+                            <small>პროექტი 0{i + 1}</small>
+                            <ArrowUpRight size={12} />
+                          </div>
+                        ))}
+                      </div>
+                      <div className="portfolio-complete">
+                        <span>
+                          <Check size={15} />
+                        </span>
+                        <div>
+                          <strong>შენი ახალი თავი.</strong>
+                          <small>პორტფოლიო + ფინალური პროექტი</small>
+                        </div>
+                        <Award size={25} />
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+              <div className="device-bottom">
+                <span>
+                  <i />
+                  LEARN. BUILD. BECOME.
+                </span>
+                <span>SkillFlow AI</span>
+              </div>
+            </div>
+            <div className="stage-float float-bottom">
+              <span className="float-check">
+                <Check size={16} />
+              </span>
+              <div>
+                <strong>
+                  {scene === 0
+                    ? "რთული კითხვა? ერთად გავარკვიოთ."
+                    : scene === 1
+                      ? "პირველი ინტერაქცია უკვე მუშაობს."
+                      : "მზადაა შენი შემდეგი ნაბიჯისთვის."}
+                </strong>
+                <small>
+                  {scene === 0
+                    ? "ახსნა → მაგალითი → შენი აღმოჩენა"
+                    : scene === 1
+                      ? "სცადე + ღილაკი სასწავლო სივრცეში"
+                      : "შენი ნამუშევრები ერთ სივრცეში"}
+                </small>
+              </div>
+              {scene === 2 ? (
+                <Award size={24} />
+              ) : (
+                <div className="float-bars">
+                  <i />
+                  <i />
+                  <i />
+                  <i />
+                  <i />
+                </div>
+              )}
+            </div>
+          </div>
+          <div className="visual-description">
+            <span className="visual-caption-dot" />
+            {current.detail}
+            <span>0{scene + 1} / 03</span>
           </div>
         </div>
-      </section>
-
-      <section id="catalog" className="mx-auto max-w-6xl px-4 py-20">
-        <h2 className="text-3xl font-bold">კურსები</h2>
-        <div className="mt-6 flex flex-wrap gap-2">
-          {categories.map((c) => (
-            <Button key={c.id} size="sm" variant={cat === c.id ? "default" : "outline"} className="rounded-full" onClick={() => setCat(c.id)} aria-pressed={cat === c.id}>{c.label}</Button>
+        <div className="cinema-mobile-actions">
+          <button
+            className="cinema-primary"
+            onClick={() => {
+              setCatalog(true);
+              setChosen(null);
+            }}
+          >
+            აღმოაჩინე კურსები
+            <ArrowUpRight size={17} />
+          </button>
+          <button
+            className="cinema-mobile-guide"
+            aria-label="პროფესიის შერჩევის მეგზურის გახსნა"
+            onClick={() => showGuide()}
+          >
+            <Sparkles size={20} />
+          </button>
+        </div>
+      </main>
+      <footer className="cinema-footer">
+        <span className="cinema-footer-note">შენი ახალი გამოცდილება</span>
+        <div className="scene-selector" role="group" aria-label="სწავლის გამოცდილების რეჟიმი">
+          {scenes.map((s, i) => (
+            <button
+              key={s.label}
+              className={scene === i ? "active" : ""}
+              aria-pressed={scene === i}
+              onClick={() => changeScene(i)}
+            >
+              <span className="scene-number">0{i + 1}</span>
+              <s.icon size={19} />
+              <span>
+                <strong>{s.label}</strong>
+                <small>{s.subtitle}</small>
+              </span>
+              <ArrowUpRight className="scene-arrow" size={16} />
+            </button>
           ))}
         </div>
-        <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {list.map((c) => (
-            <div key={c.title} className="rounded-2xl border bg-card p-5 transition hover:shadow-elegant">
-              {c.pilot && <span className="rounded-full bg-secondary px-2 py-0.5 text-xs font-semibold text-secondary-foreground">ახალი</span>}
-              <p className="mt-2 font-semibold">{c.title}</p>
-              <p className="mt-1 text-sm text-muted-foreground">9 თვე · 100 ₾/თვე</p>
+        <a href="/explore" className="cinema-explore-link">
+          მეტი შესაძლებლობა
+          <ArrowUpRight size={15} />
+        </a>
+      </footer>
+      <CareerAssistant />
+      <Dialog open={catalog} onOpenChange={setCatalog}>
+        <DialogContent className="cinema-catalog">
+          <DialogTitle>{chosen ?? "რომელი გზა იქნება შენი?"}</DialogTitle>
+          <DialogDescription>
+            {chosen
+              ? `${chosenCourse?.durationMonths} თვე · 100 ₾ / თვე`
+              : "აღმოაჩინე მიმართულება ან სთხოვე მეგზურს დახმარება."}
+          </DialogDescription>
+          {chosen ? (
+            <div className="cinema-course-detail">
+              <div className="course-detail-art">
+                <img src={chosenCourse?.image} alt={chosenCourse?.imageAlt} />
+                <span>შენი ახალი დასაწყისი</span>
+              </div>
+              <div className="course-detail-steps">
+                {[
+                  "საფუძვლები და პრაქტიკა",
+                  "პროექტები და უკუკავშირი",
+                  "პორტფოლიო და ფინალური პროექტი",
+                ].map((s, i) => (
+                  <div key={s}>
+                    <span>0{i + 1}</span>
+                    {s}
+                    <Check size={15} />
+                  </div>
+                ))}
+              </div>
+              <button className="cinema-primary" onClick={() => showGuide(chosen)}>
+                ამ კურსზე ჰკითხე მეგზურს
+                <Sparkles size={16} />
+              </button>
+              <a className="cinema-detail-link" href="/explore#how">
+                გაიცანი სასწავლო გზა
+                <ArrowUpRight size={15} />
+              </a>
+              <button className="cinema-back" onClick={() => setChosen(null)}>
+                <ArrowLeft size={14} />
+                ყველა კურსი
+              </button>
             </div>
-          ))}
-        </div>
-      </section>
-
-      <section id="demo" className="bg-muted/50 py-20">
-        <div className="mx-auto grid max-w-6xl gap-8 px-4 md:grid-cols-2">
-          <img src={mentor} alt="" loading="lazy" width={1024} height={1024} className="aspect-video w-full rounded-3xl object-cover object-top" />
-          <div className="rounded-3xl border bg-card p-6">
-            <p className="text-sm font-semibold text-muted-foreground">ლექცია: React state</p>
-            <div className="mt-4 space-y-3 text-sm">
-              <p className="ml-auto w-fit max-w-[80%] rounded-2xl bg-primary px-4 py-2 text-primary-foreground">რატომ არ განახლდა კომპონენტი?</p>
-              <p className="w-fit max-w-[85%] rounded-2xl bg-muted px-4 py-2">კარგი კითხვაა! შენ state-ს პირდაპირ ცვლი. სცადე setCount-ის გამოყენება — როგორ ფიქრობ, რას გააკეთებს React ამის შემდეგ?</p>
-            </div>
-            <div className="mt-5 flex flex-wrap gap-2">
-              {["უფრო მარტივად ამიხსენი", "მაგალითი მომეცი", "გამომცადე", "უფრო ღრმად"].map((q) => (
-                <span key={q} className="rounded-full border px-3 py-1 text-xs">{q}</span>
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section id="pricing" className="mx-auto max-w-6xl px-4 py-20 text-center">
-        <h2 className="text-3xl font-bold">ერთი მარტივი ფასი</h2>
-        <div className="mx-auto mt-10 max-w-md rounded-3xl border bg-card p-8 shadow-elegant">
-          <p className="text-5xl font-extrabold">100 ₾<span className="text-lg font-medium text-muted-foreground"> / თვე</span></p>
-          <p className="mt-2 text-sm text-muted-foreground">9 თვე = 900 ₾ სულ · გაუქმება ნებისმიერ დროს</p>
-          <ul className="mt-6 space-y-2 text-left text-sm">
-            {["AI ავატარ ლექციები", "შეუზღუდავი კითხვები AI მენტორთან", "ქვიზები, დავალებები, გამოცდები", "ვერიფიცირებული სერტიფიკატი"].map((f) => <li key={f}>✓ {f}</li>)}
-          </ul>
-          <Button variant="hero" size="lg" className="mt-8 h-12 w-full">დაიწყე 7-დღიანი საცდელი</Button>
-          <p className="mt-4 rounded-full bg-secondary px-3 py-1 text-xs font-semibold text-secondary-foreground">7-დღიანი თანხის დაბრუნების გარანტია</p>
-        </div>
-      </section>
-
-      <section className="bg-muted/50 py-20">
-        <div className="mx-auto grid max-w-6xl gap-4 px-4 md:grid-cols-3">
-          {[["ნინო, 24", "AI მენტორი ღამის 2 საათზეც მპასუხობდა. პირველი სამსახური 8 თვეში ვიპოვე."], ["გიორგი, 31", "სამსახურთან ერთად ვსწავლობდი — ჩემი დღეები, ჩემი ტემპი."], ["მარიამი, 19", "ბუთქემფის ფასის მეათედად იგივე ცოდნა მივიღე."]].map(([n, t]) => (
-            <figure key={n} className="rounded-3xl border bg-card p-6"><blockquote className="text-sm">"{t}"</blockquote><figcaption className="mt-4 text-sm font-semibold">{n}</figcaption></figure>
-          ))}
-        </div>
-      </section>
-
-      <section id="faq" className="mx-auto max-w-3xl px-4 py-20">
-        <h2 className="text-3xl font-bold">ხშირი კითხვები</h2>
-        <Accordion type="single" collapsible className="mt-6">
-          {faqs.map(([q, a]) => (
-            <AccordionItem key={q} value={q}><AccordionTrigger>{q}</AccordionTrigger><AccordionContent>{a}</AccordionContent></AccordionItem>
-          ))}
-        </Accordion>
-      </section>
-
-      <footer className="border-t py-10 text-center text-sm text-muted-foreground">© 2026 SkillFlow AI · თბილისი</footer>
+          ) : (
+            <>
+              <div className="cinema-categories" role="group" aria-label="კურსების მიმართულებები">
+                {categories.map((c) => (
+                  <button
+                    aria-pressed={cat === c.id}
+                    className={cat === c.id ? "active" : ""}
+                    key={c.id}
+                    onClick={() => setCat(c.id)}
+                  >
+                    {c.label}
+                  </button>
+                ))}
+              </div>
+              <div className="cinema-course-list">
+                {courses
+                  .filter((c) => cat === "all" || cat === c.category)
+                  .map((c, i) => (
+                    <a key={c.title} href={`/courses/${c.slug}`}>
+                      <img
+                        className="catalog-course-thumb"
+                        src={c.thumbnail}
+                        alt={c.imageAlt}
+                        loading="lazy"
+                        width={108}
+                        height={76}
+                      />
+                      <span>{String(i + 1).padStart(2, "0")}</span>
+                      <div>
+                        <strong>{c.title}</strong>
+                        <small>{c.durationMonths} თვე · 100 ₾ / თვე</small>
+                      </div>
+                      <ArrowUpRight size={18} />
+                    </a>
+                  ))}
+              </div>
+              <button className="cinema-catalog-guide" onClick={() => showGuide()}>
+                <Sparkles size={16} />
+                არჩევანში მეგზური დაგეხმარება
+                <ArrowRight size={16} />
+              </button>
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
+      <Dialog open={menu} onOpenChange={setMenu}>
+        <DialogContent className="cinema-menu-dialog">
+          <DialogTitle>შენი შემდეგი ნაბიჯი</DialogTitle>
+          <DialogDescription>აღმოაჩინე SkillFlow</DialogDescription>
+          <button
+            onClick={() => {
+              setMenu(false);
+              setCatalog(true);
+              setChosen(null);
+            }}
+          >
+            კურსები
+            <ArrowUpRight />
+          </button>
+          <a href="/explore#how">
+            სასწავლო გზა
+            <ArrowUpRight />
+          </a>
+          <a href="/explore#pricing">
+            ფასი
+            <ArrowUpRight />
+          </a>
+          <a href="/explore#faq">
+            ხშირი კითხვები
+            <ArrowUpRight />
+          </a>
+          <button onClick={() => showGuide()}>
+            პროფესიის მეგზური
+            <Sparkles />
+          </button>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
