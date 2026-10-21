@@ -81,6 +81,9 @@ export function CareerAssistant() {
         setMode("learn");
       } else {
         setMode("career");
+        setQuiz(true);
+        setStep(0);
+        setDone(false);
       }
       setOpen(true);
     };
@@ -352,23 +355,16 @@ export function CareerAssistant() {
                 {experience} · {time}
               </p>
               {recommendations.map((c) => (
-                <button
-                  className="guide-course"
-                  key={c.title}
-                  onClick={() => {
-                    setCourse(c.title);
-                    switchMode("learn");
-                  }}
-                >
+                <a className="guide-course" key={c.title} href={`/courses/${c.slug}`}>
                   <span>
                     <img src={c.thumbnail} alt={c.imageAlt} loading="lazy" />
                   </span>
                   <div>
                     <strong>{c.title}</strong>
-                    <small>სწავლის განხილვა · {c.durationMonths} თვე · 100 ₾/თვე</small>
+                    <small>ნახე გეგმა და შედეგი · {c.durationMonths} თვე · 100 ₾/თვე</small>
                   </div>
                   <ArrowUpRight size={17} />
-                </button>
+                </a>
               ))}
               <div className="guide-study-plan">
                 <strong>შენი პირველი კვირა</strong>

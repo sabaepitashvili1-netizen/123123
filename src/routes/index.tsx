@@ -24,7 +24,9 @@ import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/compone
 import { CareerAssistant } from "@/components/career-assistant";
 import { categories, courses, courseByTitle, type Category } from "@/content/catalog";
 import { PromoVideo } from "@/components/promo-video";
+import { courseOutcomes } from "@/content/course-experience";
 import "@/home.css";
+import "@/premium.css";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -90,6 +92,7 @@ function Home() {
   const [scene, setScene] = useState(0),
     [catalog, setCatalog] = useState(false),
     [cat, setCat] = useState<Category | "all">("all"),
+    [search, setSearch] = useState(""),
     [chosen, setChosen] = useState<string | null>(null),
     [menu, setMenu] = useState(false),
     [count, setCount] = useState(0);
@@ -158,19 +161,19 @@ function Home() {
           <h1>{current.title}</h1>
           <p>{current.description}</p>
           <div className="cinema-actions">
+            <button className="cinema-primary" onClick={() => showGuide()}>
+              ამარჩევინე კურსი
+              <ArrowUpRight size={18} />
+            </button>
             <button
-              className="cinema-primary"
+              className="cinema-secondary"
               onClick={() => {
                 setCatalog(true);
                 setChosen(null);
               }}
             >
-              აღმოაჩინე კურსები
-              <ArrowUpRight size={18} />
-            </button>
-            <button className="cinema-secondary" onClick={() => showGuide()}>
-              <Compass size={17} />
-              <span>ჯერ არ აგირჩევია?</span>
+              <BookOpen size={17} />
+              <span>ყველა კურსის ნახვა</span>
             </button>
           </div>
           <div className="cinema-proof">
@@ -184,6 +187,95 @@ function Home() {
               შენი განრიგით
             </span>
           </div>
+        </div>
+        <div className="cinema-mobile-story" key={`mobile-${scene}`}>
+          {scene === 0 ? (
+            <>
+              <img
+                className="mobile-mentor-photo"
+                src="/media/skillflow-mentor-cover.jpg"
+                alt="SkillFlow-ის AI მენტორი — კეთილგანწყობილი ციფრული პერსონაჟი"
+                fetchPriority="high"
+              />
+              <div className="mobile-story-shade" />
+              <div className="mobile-story-top">
+                <span>
+                  <Sparkles size={14} />
+                  გაიცანი შენი მეგზური
+                </span>
+                <span>01 / 03</span>
+              </div>
+              <div className="mobile-story-bottom">
+                <div>
+                  <small>დიდი იდეები. პატარა ნაბიჯებით.</small>
+                  <strong>ერთი ნაბიჯით დაიწყე.</strong>
+                </div>
+                <PromoVideo className="mobile-story-play" />
+              </div>
+            </>
+          ) : scene === 1 ? (
+            <>
+              <div className="mobile-build-top">
+                <span>
+                  <Code2 size={16} />
+                  შენი პირველი პროექტი
+                </span>
+                <span>02 / 03</span>
+              </div>
+              <div className="mobile-code-lines">
+                <span>
+                  <em>const</em> idea = <b>"შენი იდეა"</b>;
+                </span>
+                <span>
+                  <em>function</em> createFuture() &#123;
+                </span>
+                <span>
+                  &nbsp; return &lt;<b>YourNextStep</b> /&gt;;
+                </span>
+                <span>&#125;</span>
+              </div>
+              <div className="mobile-build-demo">
+                <div>
+                  <small>შენ ქმნი. უკვე მუშაობს.</small>
+                  <strong aria-live="polite">{count.toString().padStart(2, "0")}</strong>
+                </div>
+                <button
+                  onClick={() => setCount((c) => c + 1)}
+                  aria-label="მობილური პროექტის მრიცხველის გაზრდა"
+                >
+                  <Plus size={26} />
+                </button>
+              </div>
+            </>
+          ) : (
+            <>
+              <div className="mobile-build-top">
+                <span>
+                  <Award size={16} />
+                  შენი მომავალი პორტფოლიო
+                </span>
+                <span>03 / 03</span>
+              </div>
+              <div className="mobile-portfolio-gallery">
+                {["frontend", "graphic-design", "data-science"].map((slug, i) => {
+                  const project = courses.find((c) => c.slug === slug)!;
+                  return (
+                    <a href={`/courses/${slug}`} key={slug}>
+                      <img src={project.thumbnail} alt={project.imageAlt} />
+                      <span>
+                        0{i + 1}
+                        <ArrowUpRight size={14} />
+                      </span>
+                    </a>
+                  );
+                })}
+              </div>
+              <div className="mobile-portfolio-caption">
+                <strong>ცოდნა, რომელსაც აჩვენებ.</strong>
+                <span>ვებპროდუქტი · დიზაინი · ანალიტიკა</span>
+              </div>
+            </>
+          )}
         </div>
         <div className="cinema-visual" aria-label="სწავლის გამოცდილების ინტერაქტიული ნიმუში">
           <div className="stage-halo" />
@@ -354,16 +446,28 @@ function Home() {
                         </div>
                       </div>
                       <div className="portfolio-projects">
-                        {[Code2, Layers, Compass].map((I, i) => (
-                          <div key={i} className={`portfolio-project project-${i}`}>
-                            <div>
-                              <I size={30} strokeWidth={1.3} />
-                              <span />
+                        {[
+                          { slug: "frontend", label: "ვებაპლიკაცია" },
+                          { slug: "graphic-design", label: "ბრენდის დიზაინი" },
+                          { slug: "data-science", label: "მონაცემების დაფა" },
+                        ].map(({ slug, label }, i) => {
+                          const project = courses.find((course) => course.slug === slug)!;
+                          return (
+                            <div key={slug} className={`portfolio-project project-${i}`}>
+                              <div>
+                                <img
+                                  src={project.thumbnail}
+                                  alt={project.imageAlt}
+                                  width={800}
+                                  height={500}
+                                  decoding="async"
+                                />
+                              </div>
+                              <small>{label}</small>
+                              <ArrowUpRight size={12} />
                             </div>
-                            <small>პროექტი 0{i + 1}</small>
-                            <ArrowUpRight size={12} />
-                          </div>
-                        ))}
+                          );
+                        })}
                       </div>
                       <div className="portfolio-complete">
                         <span>
@@ -427,22 +531,19 @@ function Home() {
           </div>
         </div>
         <div className="cinema-mobile-actions">
+          <button className="cinema-primary" onClick={() => showGuide()}>
+            ამარჩევინე კურსი
+            <ArrowUpRight size={17} />
+          </button>
           <button
-            className="cinema-primary"
+            className="cinema-mobile-guide"
+            aria-label="ყველა კურსის ნახვა"
             onClick={() => {
               setCatalog(true);
               setChosen(null);
             }}
           >
-            აღმოაჩინე კურსები
-            <ArrowUpRight size={17} />
-          </button>
-          <button
-            className="cinema-mobile-guide"
-            aria-label="პროფესიის შერჩევის მეგზურის გახსნა"
-            onClick={() => showGuide()}
-          >
-            <Sparkles size={20} />
+            <BookOpen size={20} />
           </button>
         </div>
       </main>
@@ -526,9 +627,24 @@ function Home() {
                   </button>
                 ))}
               </div>
+              <label className="catalog-search">
+                რა გაინტერესებს?
+                <input
+                  type="search"
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  placeholder="მოძებნე კურსი ან თემა…"
+                />
+              </label>
               <div className="cinema-course-list">
                 {courses
-                  .filter((c) => cat === "all" || cat === c.category)
+                  .filter(
+                    (c) =>
+                      (cat === "all" || cat === c.category) &&
+                      `${c.title} ${c.description} ${c.topics.join(" ")} ${courseOutcomes[c.slug]?.tools ?? ""}`
+                        .toLocaleLowerCase()
+                        .includes(search.trim().toLocaleLowerCase()),
+                  )
                   .map((c, i) => (
                     <a key={c.title} href={`/courses/${c.slug}`}>
                       <img
@@ -548,6 +664,17 @@ function Home() {
                     </a>
                   ))}
               </div>
+              {!courses.some(
+                (c) =>
+                  (cat === "all" || cat === c.category) &&
+                  `${c.title} ${c.description} ${c.topics.join(" ")} ${courseOutcomes[c.slug]?.tools ?? ""}`
+                    .toLocaleLowerCase()
+                    .includes(search.trim().toLocaleLowerCase()),
+              ) && (
+                <p className="catalog-empty" role="status">
+                  ამ ძიებით კურსი ვერ მოიძებნა. შეცვალე სიტყვა ან კატეგორია.
+                </p>
+              )}
               <button className="cinema-catalog-guide" onClick={() => showGuide()}>
                 <Sparkles size={16} />
                 არჩევანში მეგზური დაგეხმარება

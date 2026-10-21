@@ -13,6 +13,14 @@ for (const name of ["OPENAI_API_KEY", "OPENAI_MODEL"]) {
   if (!process.env[name] && assistantEnv[name]) process.env[name] = assistantEnv[name];
 }
 
+const applicationEnv = loadEnv(
+  process.env["NODE_ENV"] || "development",
+  process.cwd(),
+  "APPLICATION_",
+);
+if (!process.env["APPLICATION_WEBHOOK_URL"] && applicationEnv["APPLICATION_WEBHOOK_URL"])
+  process.env["APPLICATION_WEBHOOK_URL"] = applicationEnv["APPLICATION_WEBHOOK_URL"];
+
 export default defineConfig({
   tanstackStart: {
     // Redirect TanStack Start's bundled server entry to src/server.ts (our SSR error wrapper).

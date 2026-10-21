@@ -41,6 +41,8 @@ import { categories, courses, courseByTitle, type Category } from "@/content/cat
 import mentor from "@/assets/ai-mentor.jpg";
 import { PromoVideo } from "@/components/promo-video";
 import { CareerAssistant } from "@/components/career-assistant";
+import { courseOutcomes } from "@/content/course-experience";
+import "@/premium.css";
 export const Route = createFileRoute("/explore")({
   head: () => ({
     meta: [
@@ -113,7 +115,7 @@ const fullStages = [
   {
     title: "ფინალური პროექტი",
     text: "გააერთიანე მთელი გამოცდილება ერთ დასრულებულ პროექტში.",
-    output: "კაპსტოუნი + სერტიფიკატი",
+    output: "პროექტი + პრეზენტაცია",
     icon: Award,
     code: "const nextChapter = 'შენი მომავალი';",
   },
@@ -158,17 +160,18 @@ const faqs = [
   ],
   [
     "როგორ მუშაობს AI მენტორი?",
-    "სასწავლო კონცეფცია აერთიანებს AI ავატარ ლექციებსა და მენტორის დახმარებას. გვერდზე მოცემული დემო გაჩვენებს განმარტების, მაგალითისა და ქვიზის ფორმატს.",
+    "მიმართულების კითხვარი ხელმისაწვდომია. მენტორის ვიდეო და სასწავლო დემო გამოცდილებას გაჩვენებს; თავისუფალი AI ჩატის გააქტიურება მზადდება.",
   ],
   [
     "როგორ დავიწყო?",
-    "აირჩიე კურსი და ნახე სასწავლო გზის მაგალითი. ამ ვერსიაში რეგისტრაცია და გადახდა ჯერ არ არის ჩართული.",
+    "აირჩიე კურსი, გაეცანი გეგმას და უფასოდ დააფიქსირე ინტერესი განაცხადით. ანგარიშის შექმნა და გადახდა ჯერ არ არის ჩართული.",
   ],
 ];
 const icons = { tech: Code2, design: Palette, business: TrendingUp, content: Globe, other: Blocks };
 function Index() {
   const [month, setMonth] = useState(0),
     [cat, setCat] = useState<Category | "all">("all"),
+    [search, setSearch] = useState(""),
     [expanded, setExpanded] = useState(false),
     [menu, setMenu] = useState(false),
     [demo, setDemo] = useState(0),
@@ -176,7 +179,13 @@ function Index() {
     [selected, setSelected] = useState<string | null>(null);
   const stage = stages[month]!,
     Icon = stage.icon,
-    list = courses.filter((c) => cat === "all" || c.category === cat);
+    list = courses.filter(
+      (c) =>
+        (cat === "all" || c.category === cat) &&
+        `${c.title} ${c.description} ${c.topics.join(" ")} ${courseOutcomes[c.slug]?.tools ?? ""}`
+          .toLocaleLowerCase()
+          .includes(search.trim().toLocaleLowerCase()),
+    );
   useEffect(() => {
     document.documentElement.classList.add("sf-motion");
     const o = new IntersectionObserver(
@@ -374,7 +383,7 @@ function Index() {
             </div>
             <div>
               <Award />
-              სერტიფიკატი
+              საკუთარი ნამუშევარი
             </div>
           </div>
         </div>
@@ -550,6 +559,25 @@ function Index() {
               </button>
             ))}
           </div>
+          <div className="catalog-tools">
+            <label className="catalog-search">
+              იპოვე შენი მიმართულება
+              <input
+                type="search"
+                value={search}
+                onChange={(e) => {
+                  setSearch(e.target.value);
+                  setExpanded(false);
+                }}
+                placeholder="მაგალითად: დიზაინი, React, მარკეტინგი…"
+              />
+            </label>
+            <button onClick={() => window.dispatchEvent(new CustomEvent("skillflow:guide"))}>
+              <Sparkles size={16} />
+              ამარჩევინე კურსი
+              <ArrowUpRight size={16} />
+            </button>
+          </div>
           <div className="course-grid">
             {(expanded ? list : list.slice(0, 6)).map((c) => {
               const C = icons[c.category];
@@ -587,6 +615,7 @@ function Index() {
                   <div className="course-info">
                     <span>{categories.find((t) => t.id === c.category)?.label}</span>
                     <h3>{c.title}</h3>
+                    <p className="catalog-outcome">{courseOutcomes[c.slug]?.deliverable}</p>
                     <div>
                       <span>
                         <Clock3 size={13} />
@@ -601,6 +630,19 @@ function Index() {
               );
             })}
           </div>
+          {list.length === 0 && (
+            <div className="catalog-empty" role="status">
+              <p>ამ ძიებით კურსი ვერ მოიძებნა.</p>
+              <button
+                onClick={() => {
+                  setSearch("");
+                  setCat("all");
+                }}
+              >
+                ძებნის გასუფთავება
+              </button>
+            </div>
+          )}
           {list.length > 6 && (
             <button className="outline-button show-more" onClick={() => setExpanded(!expanded)}>
               {expanded ? "ნაკლების ჩვენება" : `ყველა კურსის ნახვა (${list.length})`}
@@ -731,11 +773,11 @@ function Index() {
               <div className="plan-divider" />
               <ul>
                 {[
-                  "AI ავატარ ლექციები",
-                  "მენტორის დახმარება სწავლისას",
-                  "პრაქტიკული პროექტები და ქვიზები",
-                  "პორტფოლიო და ფინალური პროექტი",
-                  "პროგრამის დასრულების სერტიფიკატი",
+                  "თვეებად დაგეგმილი სასწავლო გზა",
+                  "მიმართულების შერჩევის კითხვარი",
+                  "პრაქტიკული პროექტების გეგმა",
+                  "პორტფოლიოსა და პროექტის კონცეფცია",
+                  "მიმართულებაზე მორგებული შედეგი",
                 ].map((f) => (
                   <li key={f}>
                     <Check size={17} />
@@ -816,7 +858,7 @@ function Index() {
             {[
               "საფუძვლები და ინსტრუმენტები",
               "პრაქტიკა და პროექტები",
-              "პორტფოლიო და ფინალური პროექტი",
+              "პორტფოლიოსა და პროექტის კონცეფცია",
             ].map((s, i) => (
               <div key={s}>
                 <span>0{i + 1}</span>

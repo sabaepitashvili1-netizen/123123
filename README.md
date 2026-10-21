@@ -39,3 +39,9 @@ For hosted execution, provide the same variables in the server runtime's secret/
 Chats and questionnaire answers stay in the page's memory and clear on refresh. AI requests send the recent conversation and selected learning context to OpenAI, with `store: false`. The UI discloses the provider before sending. There are no student records or lesson-material retrieval integrations; the tutor uses the selected course and conversation, not a private curriculum. No actual OpenAI call is necessary for tests: provider success, missing configuration, errors, throttling and timeouts use mocks.
 
 References: [Responses API](https://developers.openai.com/api/docs/guides/migrate-to-responses), [GPT-4.1 mini](https://developers.openai.com/api/docs/models/gpt-4.1-mini).
+
+## Course applications
+
+Course detail pages provide a validated interest form; it does not create student accounts or charge payments. In development, submissions persist to ignored `.data/applications.jsonl`. Never commit or serve this folder. Only test data should be submitted during preview.
+
+For production, set server-only `APPLICATION_WEBHOOK_URL` to an HTTPS endpoint under your control that accepts JSON and returns success only after storing the record. Without it production submissions return an unavailable message rather than claiming success. The record includes a reference ID, course slug, name, email, optional phone, consent and creation time. No email notification or payment service is configured. Establish access controls, deletion/retention rules and persistent abuse limits at that endpoint before accepting public personal data. The local email cooldown is only a small safeguard. AI chat remains separately configurable.
